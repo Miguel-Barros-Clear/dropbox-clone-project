@@ -6,11 +6,14 @@ class DropBoxController {
         this.progressbarEl = this.snackModalEl.querySelector('.mc-progress-bar-fg');
         this.nameFileEl = this.snackModalEl.querySelector('.filename');
         this.timeLeftEl = this.snackModalEl.querySelector('.timeleft');
+        this.listFilesEl = document.querySelector("#list-of-files-and-directories");
+
         this.connectFirebase();
         this.initEvents();
+        this.readFiles();
     }
 
-    connectFirebase(){
+    connectFirebase() {
         const firebaseConfig = {
             apiKey: "AIzaSyChohv623nj7EmgkvMGGfGb9ZHZL5gKl0A",
             authDomain: "dropbox-clone-project.firebaseapp.com",
@@ -43,13 +46,13 @@ class DropBoxController {
         })
     }
 
-    uploadComplete(){
+    uploadComplete() {
         this.inputFilesEl.value = '';
         this.modalShow(false);
         this.btnSendFileEl.disabled = false;
     }
 
-    getFirebaseRef(){
+    getFirebaseRef() {
         return firebase.database().ref('files');
     }
 
@@ -124,8 +127,8 @@ class DropBoxController {
         return '';
     }
 
-    getFileIconView() {
-        switch (file.type) {
+    getFileIconView(file) {
+        switch (file.mimetype) {
             case 'folder':
                 return `
                 <svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
@@ -457,12 +460,27 @@ class DropBoxController {
         }
     }
 
-    getFileView() {
-        return `
-            <li>
-                ${this.getFileIconView(file)}
-                <div class="name text-center">${file.name}</div>
-            </li>
+    getFileView(file, key) {
+        let li = document.createElement('li');
+        li.dataset.key = key;
+        li.innerHTML = `
+            ${this.getFileIconView(file)}
+            <div class="name text-center">${file.originalFilename}</div>
         `
+        return li;
+    }
+
+    readFiles() {
+        this.getFirebaseRef().on('value', snapshot => {
+
+            this.listFilesEl.innerHTML = "";
+
+            snapshot.forEach((item) => {
+                let key = item.key;
+                let data = item.val();
+
+                this.listFilesEl.appendChild(this.getFileView(data, key))
+            })
+        })
     }
 }
