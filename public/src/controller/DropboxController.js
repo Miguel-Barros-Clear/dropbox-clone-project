@@ -578,7 +578,7 @@ class DropBoxController {
                 let key = item.key;
                 let data = item.val();
 
-                if (data.type) {
+                if (data.type || data.mimetype) {
                     this.listFilesEl.appendChild(this.getFileView({
                         ...data,
                         name: data.originalFilename,
